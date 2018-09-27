@@ -22,7 +22,7 @@ function getnewestEntryDate()
 		return;
 	}
 
-	console.log("checking Entry Date");
+	//console.log("checking Entry Date");
 	xhr.open('GET', 'https://dev.thecell.eu/ePaperDisplay/newestEntry.php?newestEntryTime=1', true);
 	dataFetchingInProgress = true;
 	xhr.send();
@@ -95,18 +95,20 @@ function writeImageToFile(filename, message)
 		}
 	}
 
-	console.log("file saved");
+	console.log("file esaved");
 }
 
 function runPython()
 {
 	let options = {};
 
+	clearInterval(interval);
 	PythonShell.run('imageCreation.py', options, pythonCallback);
 
 	function pythonCallback(err, results)
 	{
 		dataFetchingInProgress = false;
+		interval = setInterval(checkForEntry, 1000);
 		if (err) throw err;
 		// results is an array consisting of messages collected during execution
 		console.log('results: %j', results);
