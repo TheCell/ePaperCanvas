@@ -7,6 +7,10 @@ I added a mysql database inbetween to have some level of abstraction and persist
 for a detailed installation see the blog post https://blog.thecell.eu/
 You can run the arduino test to see if the ePaper display works correctly and switch to raspberry after. The arduino has not enough ram to fill a full frame though.
 
+![alt text](https://raw.githubusercontent.com/TheCell/ePaperCanvas/master/media/IMG_20180925_190854.jpg)
+![alt text](https://raw.githubusercontent.com/TheCell/ePaperCanvas/master/media/IMG_20180927_111210.jpg)
+![alt text](https://raw.githubusercontent.com/TheCell/ePaperCanvas/master/media/vlcsnap-error630.png)
+
 # installation on the Raspberry
 1. install bcm2835
 2. install wiringpi
