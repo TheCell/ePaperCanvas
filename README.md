@@ -8,17 +8,17 @@ for a detailed installation see the blog post https://blog.thecell.eu/
 You can run the arduino test to see if the ePaper display works correctly and switch to raspberry after. The arduino has not enough ram to fill a full frame though.
 
 # installation on the Raspberry
-install bcm2835
-install wiringpi
-setup sci on raspi
-install node.js
-install npm
-npm i python-shell
-npm i xhr2
+1. install bcm2835
+2. install wiringpi
+3. setup sci on raspi
+4. install node.js
+5. install npm
+6. npm i python-shell
+7. npm i xhr2
 
 then run node main.js
 
 # installation on the website
-setup a database where you can save base64 string (yes there are better ways (see binary if interested) but I don't care for this project :))
-upload the folder webinterface and edit the dbauth.php
+1. setup a database where you can save base64 string (yes there are better ways (see binary if interested) but I don't care for this project :))
+2. upload the folder webinterface and edit the dbauth.php
 everything should work now
