@@ -2,6 +2,7 @@ from PIL import Image
 from io import BytesIO
 import base64
 import re
+import epd7in5
 
 EPD_WIDTH = 640
 EPD_HEIGHT = 384
