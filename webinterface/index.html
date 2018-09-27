@@ -45,10 +45,12 @@
 	</div>
 
 	<div class="canvasWrapper">
-		<canvas id="inputCanvas" ></canvas>
+		<div class="innerCanvasWrapper">
+			<canvas id="inputCanvas"></canvas>
 
-		<div class="canvas-container">
-			<canvas id="ePaperCanvas" width="640" height="384"></canvas>
+			<div class="canvas-container">
+				<canvas id="ePaperCanvas" width="640" height="384"></canvas>
+			</div>
 		</div>
 	</div>
 
@@ -386,6 +388,22 @@
 		border: 1px solid #E7E9ED;
 		width: 640px;
 		background-color: white;
+		padding-top: -1px;
+	}
+
+	.innerCanvasWrapper
+	{
+		width: 700px;
+		margin: auto;
+	}
+
+	@media (min-width: 1300px)
+	{
+		.innerCanvasWrapper
+		{
+			width: 1300px;
+			margin: auto;
+		}
 	}
 
 	#ePaperCanvas
@@ -408,7 +426,8 @@
 		cursor: pointer; /* "hand" cursor */
 		color: #C5D0DE;
 		font-size: 18px;
-		padding: 15px 30px;
+		/*padding: 15px 30px;*/
+		padding: 10px 15px;
 	}
 
 	.button:hover
@@ -433,26 +452,29 @@
 	{
 		width: 100%;
 		background-color: #2B333E;
-		padding: 50px 0px;
+		padding: 10px 0px;
 	}
 
 	.optionsMenu
 	{
-		height: 50px;
+		height: 43px;
 		margin: 0px auto;
-		width: 820px;
+		width: 700px;
 	}
 
 	.canvasWrapper
 	{
+		margin-top: 10px;
 		width: 100%;
 		height: 100%;
 	}
 
 	.canvas-container
 	{
-		margin: 50px auto;
+		/*margin: 10px auto;*/
 		width: 640px;
+		display: inline-block;
+		padding-top: 2px;
 	}
 
 	#imageLoader
