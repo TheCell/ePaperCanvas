@@ -4,7 +4,7 @@ This is a Repo to send Images from a Browser to an e Paper display.
 I added a mysql database inbetween to have some level of abstraction and persistent data.
 
 # detailed installation
-for a detailed installation see the blog post https://blog.thecell.eu/
+for a detailed installation see the blog post https://blog.thecell.eu/blog/2018/09/27/epaper-canvas/
 You can run the arduino test to see if the ePaper display works correctly and switch to raspberry after. The arduino has not enough ram to fill a full frame though.
 
 ![alt text](https://raw.githubusercontent.com/TheCell/ePaperCanvas/master/media/IMG_20180925_190854.jpg)
