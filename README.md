@@ -13,8 +13,9 @@ You can run the arduino test to see if the ePaper display works correctly and sw
 3. setup sci on raspi
 4. install node.js
 5. install npm
-6. npm i python-shell
-7. npm i xhr2
+6. change the directory to the raspberryProgram directory
+7. npm i python-shell
+8. npm i xhr2
 
 then run node main.js
 
