@@ -80,7 +80,11 @@ function updateEpaper(dataObj)
 		dateOfEpaperImage = new Date(dataObj.uploadTime);
 		timeSinceLastPaperUpdate = currentTime;
 	}
-	//dataFetchingInProgress = false;
+	else
+	{
+		console.log("entry was not older then 5 seconds");
+		dataFetchingInProgress = false;
+	}
 }
 
 function writeImageToFile(filename, message)
