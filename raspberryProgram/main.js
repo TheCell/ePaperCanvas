@@ -80,7 +80,7 @@ function updateEpaper(dataObj)
 		dateOfEpaperImage = new Date(dataObj.uploadTime);
 		timeSinceLastPaperUpdate = currentTime;
 	}
-	dataFetchingInProgress = false;
+	//dataFetchingInProgress = false;
 }
 
 function writeImageToFile(filename, message)
@@ -106,6 +106,7 @@ function runPython()
 
 	function pythonCallback(err, results)
 	{
+		dataFetchingInProgress = false;
 		if (err) throw err;
 		// results is an array consisting of messages collected during execution
 		console.log('results: %j', results);
