@@ -111,7 +111,10 @@ function runPython()
 	function pythonCallback(err, results)
 	{
 		dataFetchingInProgress = false;
-		if (err) throw err;
+		if (err)
+		{
+			console.error(err);
+		}
 		// results is an array consisting of messages collected during execution
 		console.log('results: %j', results);
 	}
