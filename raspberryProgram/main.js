@@ -52,7 +52,7 @@ function getnewestEntryDate()
 
 function getNewestDataAndPaint()
 {
-	print("new entrie found, processing");
+	console.log("new entrie found, processing");
 	xhr.open('GET', 'https://dev.thecell.eu/ePaperDisplay/newestEntry.php?newestEntry=1', true);
 	xhr.send();
 	xhr.onload = function ()
