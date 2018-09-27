@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Epaper webinterface</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="fontawesome_5.3.1/css/solid.css">
+	<link rel="stylesheet" href="fontawesome_5.3.1/css/fontawesome.css">
+	<script type="text/javascript" src="fabric.min.js"></script>
+	<script type="text/javascript" src="floydSteinbergDithering.js"></script>
+	<script type="text/javascript" src="hexBinConvert.js"></script>
+</head>
+<body>
+	<div class="optionsWrapper">
+		<div class="optionsMenu">
+			<input type="file" id="imageLoader" name="imageLoader" />
+			<label for="imageLoader" class="button"><i class="fas fa-image">
+				</i> image upload
+			</label>
+
+			<input type="range" id="scaleRange" class="button" min="1" max="10" step="1" list="scaleRangeList">
+
+			<a class="button" id="downloadButton" onclick="downloadImage()">
+				<i class="fas fa-download"></i> download
+			</a>
+			<!--<label>download to display</label>-->
+
+			<!--
+			<a class="button" id="sendButton" onclick="sendImage()">send</a>
+			<label>Arduino Format</label>
+			-->
+
+			<a class="button submitButton" id="send64Button" onclick="sendImageAsBase64()">
+				<i class="fas fa-paper-plane"></i> send to ePaper
+			</a>
+
+			<!--
+			<datalist id="scaleRangeList">
+				<option value="0" label="0" />
+				<option value="5" label="5" />
+				<option value="10" label="10" />
+			</datalist>
+			-->
+		</div>
+	</div>
+
+	<div class="canvasWrapper">
+		<canvas id="inputCanvas" ></canvas>
+
+		<div class="canvas-container">
+			<canvas id="ePaperCanvas" width="640" height="384"></canvas>
+		</div>
+	</div>
+
+
+<script type="text/javascript">
+	// canvas code
+	"use strict";
+
+	function setupCanvas(canvas)
+	{
+		canvas.width = 640;
+		canvas.height = 384;
+	}
+
+	let inputCanvas = document.getElementById("inputCanvas");
+	setupCanvas(inputCanvas);
+	// create a wrapper around native canvas element
+	window.fabricCanvas = new fabric.Canvas("inputCanvas");
+
+	function insertImageInCanvas(imgElement)
+	{
+		let imgInstance = new fabric.Image(
+			imgElement,
+			{
+			left: 0,
+			top: 0,
+			angle: 0,
+			opacity: 1.00
+			}
+		);
+		imgInstance.scaleToWidth(640, false);
+		window.fabricCanvas.add(imgInstance);
+		/*
+		fabric.Image.fromURL('my_image.png', function(oImg)
+		{
+			window.fabricCanvas.add(oImg);
+		});
+		*/
+	}
+
+	// I don't have time to check why I need to recall this again here but you have to
+	setupCanvas(inputCanvas);
+</script>
+<script type="text/javascript">
+	// user input code
+	"use strict";
+	function setGrayLevels()
+	{
+		let range = document.getElementById("scaleRange");
+		let numberNotChecked = parseInt(range.value);
+		let numberChecked = 2;
+		if (
+			isNaN(numberNotChecked)
+			|| numberNotChecked < 1
+			|| numberNotChecked > 10)
+		{
+			console("number not correct");
+		}
+		else
+		{
+			numberChecked = numberNotChecked;
+		}
+
+		window.resolutionFactor = numberChecked;
+	}
+
+	let scaleRange = document.getElementById("scaleRange");
+	scaleRange.addEventListener('change', setGrayLevels, false);
+	scaleRange.defaultValue = 1;
+	setGrayLevels();
+
+	let imageLoader = document.getElementById('imageLoader');
+    imageLoader.addEventListener('change', handleImage, false);
+
+    function handleImage(e)
+    {
+		let reader = new FileReader();
+		reader.onload = function(event)
+		{
+			var img = new Image();
+			img.onload = function()
+			{
+				insertImageInCanvas(img);
+			}
+			img.src = event.target.result;
+		}
+		reader.readAsDataURL(e.target.files[0]);
+	}
+
+	function downloadImage()
+	{
+		window.fabricCanvas.discardActiveObject().renderAll();
+		displayResult();
+		let ePaperCanvas = document.getElementById("ePaperCanvas");
+		let grayscaleImage = ePaperCanvas.toDataURL();
+
+		let link = document.getElementById("downloadButton");
+		link.href = grayscaleImage;
+		link.download = "grayscale.png";
+		//window.location.href=ePaperCanvas.toDataURL();
+	}
+
+	function sendImage()
+	{
+		window.resolutionFactor = 1;
+		window.fabricCanvas.discardActiveObject().renderAll();
+		displayResult();
+		let ePaperCanvas = document.getElementById("ePaperCanvas");
+		let ePaperCanvasCTX = ePaperCanvas.getContext("2d");
+		let grayscaleObject = getGrayscaleData();
+		let pixelAsHex = convertPixelsToHex(grayscaleObject);
+
+		let link = document.getElementById("sendButton");
+		link.href = "data:text/plain;charset=utf-8;base64," + base64Encode(pixelAsHex);
+		link.download = "blackAndWhite.txt";
+		//window.location.href=ePaperCanvas.toDataURL();
+	}
+
+	function sendImageAsBase64()
+	{
+		window.resolutionFactor = 1;
+		window.fabricCanvas.discardActiveObject().renderAll();
+		displayResult();
+		let ePaperCanvas = document.getElementById("ePaperCanvas");
+		let ePaperCanvasCTX = ePaperCanvas.getContext("2d");
+		let grayscaleObject = getGrayscaleData();
+		let encoderCanvas = document.createElement("canvas");
+
+		encoderCanvas.width = grayscaleObject.width;
+		encoderCanvas.height = grayscaleObject.height;
+		let encoderCanvasCTX = encoderCanvas.getContext("2d");
+		encoderCanvasCTX.putImageData(grayscaleObject, 0, 0);
+
+		let xhr = new XMLHttpRequest();
+		xhr.open(
+			"POST",
+			"https://dev.thecell.eu/ePaperDisplay/serverSide.php",
+			true);
+		//xhr.setRequestHeader('Content-Type', 'text/plain');
+		xhr.onreadystatechange = function()
+		{
+			if (this.readyState == XMLHttpRequest.DONE)
+			{
+				if (this.status == 200)
+				{
+					console.log(this.responseText);
+				}
+				else
+				{
+					console.log("error");
+					console.log(this);
+				}
+			}
+		};
+
+		let formData = new FormData();
+		formData.append("imageData", encoderCanvas.toDataURL());
+		xhr.send(formData);
+
+		/*
+		let link = document.getElementById("send64Button");
+		link.href = encoderCanvas.toDataURL();
+		console.log(link.href);
+		link.download = "base64bw.txt";
+		*/
+		//window.location.href=ePaperCanvas.toDataURL();
+
+		let sendButton = document.getElementById("send64Button");
+		sendButton.style.backgroundColor = "#4CAF50";
+		sendButton.style.color = "#C5D0DE";
+		sendButton.style.cursor = "default";
+		sendButton.onclick = "";
+	}
+
+	function convertPixelsToHex(pixels)
+	{
+		let pixelsString = "";
+
+		let counterForBreaks = 0;
+
+		for (let i = 0; i < pixels.data.length; i += 32)
+		{
+			if(counterForBreaks > 15)
+			{
+				counterForBreaks = 0;
+				pixelsString += "__";
+			}
+			// only read the R value.
+			pixelsString += "0X" + convertEightNumbersToHex(
+				pixels.data[i],
+				pixels.data[i+4],
+				pixels.data[i+8],
+				pixels.data[i+12],
+				pixels.data[i+16],
+				pixels.data[i+20],
+				pixels.data[i+24],
+				pixels.data[i+28]) + ",";
+			counterForBreaks ++;
+		}
+
+		return pixelsString;
+	}
+
+	function convertEightNumbersToHex(
+		firstPixel,
+		secondPixel,
+		thirdPixel,
+		fourthPixel,
+		fifthPixel,
+		sixtPixel,
+		seventhPixel,
+		lastPixel)
+	{
+		let hexString = "F";
+		let binString = "";
+		binString += singlePixelToBin(firstPixel);
+		binString += singlePixelToBin(secondPixel);
+		binString += singlePixelToBin(thirdPixel);
+		binString += singlePixelToBin(fourthPixel);
+		binString += singlePixelToBin(fifthPixel);
+		binString += singlePixelToBin(sixtPixel);
+		binString += singlePixelToBin(seventhPixel);
+		binString += singlePixelToBin(lastPixel);
+
+		let hexObj = binaryToHex(binString);
+
+		if (hexObj.valid)
+		{
+			hexString = hexObj.result;
+		}
+		else
+		{
+			console.error("hex not correct");
+		}
+		return hexString;
+	}
+
+	function singlePixelToBin(pixel)
+	{
+		let bin = "0";
+
+		if (pixel > 0)
+		{
+			bin = "1"
+		}
+
+		return bin;
+	}
+</script>
+<script type="text/javascript">
+	"use strict";
+
+	function displayResult()
+	{
+		let inputCanvas = document.getElementById("inputCanvas");
+		let ePaperCanvas = document.getElementById("ePaperCanvas");
+		let inputCTX = inputCanvas.getContext("2d");
+		let ePaperCTX = ePaperCanvas.getContext("2d");
+
+		let imageData = inputCTX.getImageData(0, 0, inputCanvas.width, inputCanvas.height);
+
+		let img = updateAndGetGrayscaleData(imageData);
+		ePaperCTX.putImageData(img, 0, 0);
+
+		//ePaperCanvas.drawImage(inputCanvas, 0, 0);
+	}
+
+	function updateAndGetGrayscaleData(imageData)
+	{
+		updateGrayscaleData(imageData);
+		return window.grayscaleImage;
+	}
+
+	function getGrayscaleData()
+	{
+		return window.grayscaleImage;
+	}
+
+	function updateGrayscaleData(imageData)
+	{
+		let fsd = new floydSteinbergDithering(window.resolutionFactor);
+		window.grayscaleImage = fsd.getImage(imageData);
+	}
+
+	function autodisplay()
+	{
+		displayResult();
+		setTimeout(autodisplay, 100);
+	}
+
+	autodisplay();
+</script>
+<script>
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+	ga('create', 'UA-75635403-2', 'auto');
+	ga('send', 'pageview');
+
+</script>
+<script type="text/javascript">
+	// I encode the given string as a Base64 value.
+	function base64Encode( stringInput )
+	{
+		// NOTE: This normalization technique for handling characters that require
+		// more than an 8-bit representation was provided on the Mozilla Developer
+		// Network website for Base64 encoding. They also provided a companion DECODE
+		// method. But, we don't need to decode in this demo.
+		// --
+		// READ MORE: https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
+		var normalizedInput = encodeURIComponent( stringInput ).replace(
+			/%([0-9A-F]{2})/g,
+			function toSolidBytes( $0, hex )
+			{
+				return( String.fromCharCode( "0x" + hex ) );
+			}
+		);
+
+		return( btoa( normalizedInput ) );
+	}
+</script>
+<style type="text/css">
+	html, body
+	{
+		background-color: #F1F4F8;
+		height: 100%;
+		width: 100%;
+		margin: 0px;
+	}
+
+	#inputCanvas
+	{
+		border: 1px solid #E7E9ED;
+		width: 640px;
+		background-color: white;
+	}
+
+	#ePaperCanvas
+	{
+		border: 1px solid #E7E9ED;
+		background-color: white;
+	}
+
+	.button
+	{
+		/*
+		width: 160px;
+		height: 50px;
+		*/
+		background-color: #3C4650;
+		text-align: center;
+		display: inline-block;
+		vertical-align: middle;
+		border-radius: 2.5px;
+		cursor: pointer; /* "hand" cursor */
+		color: #C5D0DE;
+		font-size: 18px;
+		padding: 15px 30px;
+	}
+
+	.button:hover
+	{
+		color: #3C4650;
+		background-color: #C5D0DE;
+	}
+
+	.submitButton
+	{
+		color: white;
+		background-color: #FF7800;
+	}
+
+	.submitButton:hover
+	{
+		background-color: white;
+		color: #FF7800;
+	}
+
+	.optionsWrapper
+	{
+		width: 100%;
+		background-color: #2B333E;
+		padding: 50px 0px;
+	}
+
+	.optionsMenu
+	{
+		height: 50px;
+		margin: 0px auto;
+		width: 820px;
+	}
+
+	.canvasWrapper
+	{
+		width: 100%;
+		height: 100%;
+	}
+
+	.canvas-container
+	{
+		margin: 50px auto;
+		width: 640px;
+	}
+
+	#imageLoader
+	{
+		width: 0.1px;
+		height: 0.1px;
+		opacity: 0;
+		overflow: hidden;
+		position: absolute;
+		z-index: -1;
+	}
+
+	#imageLoader + label
+	{
+		font-size: 1.25em;
+		font-weight: 700;
+		color: white;
+		background-color: #3C4650;
+		display: inline-block;
+		font-size: 18px;
+		font-weight: normal;
+		color: #C5D0DE;
+	}
+
+	#imageLoader:focus + label,
+	#imageLoader + label:hover
+	{
+		color: #3C4650;
+		background-color: #C5D0DE;
+	}
+
+	#imageLoader + label
+	{
+		cursor: pointer; /* "hand" cursor */
+	}
+
+	#imageLoader:focus + label
+	{
+		outline: 1px dotted #000;
+		outline: -webkit-focus-ring-color auto 5px;
+	}
+
+	#scaleRange
+	{
+		margin: 0px;
+		margin-right: 10px;
+	}
+
+	input[type=range]::-moz-range-thumb
+	{
+		border-radius: 2.5px;
+		height: 24px;
+		width: 8px;
+		background: #FF7800;
+		cursor: pointer;
+	}
+
+	input[type=range]::-webkit-slider-thumb
+	{
+		border-radius: 2.5px;
+		height: 24px;
+		width: 8px;
+		background: #FF7800;
+		cursor: pointer;
+	}
+
+	input[type=range]::-ms-thumb
+	{
+		border-radius: 2.5px;
+		height: 24px;
+		width: 8px;
+		background: #FF7800;
+		cursor: pointer;
+	}
+</style>
+</body>
+</html>
