@@ -95,20 +95,18 @@ function writeImageToFile(filename, message)
 		}
 	}
 
-	console.log("file esaved");
+	console.log("file saved");
 }
 
 function runPython()
 {
 	let options = {};
 
-	clearInterval(interval);
 	PythonShell.run('imageCreation.py', options, pythonCallback);
 
 	function pythonCallback(err, results)
 	{
 		dataFetchingInProgress = false;
-		interval = setInterval(checkForEntry, 1000);
 		if (err) throw err;
 		// results is an array consisting of messages collected during execution
 		console.log('results: %j', results);
