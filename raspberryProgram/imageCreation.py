@@ -14,9 +14,9 @@ def main():
     fileObj = open("base64bwExample.txt", mode="r", encoding="utf-8")
     imgAsString = fileObj.read()
     imgAsString = re.sub('^data:image/.+;base64,', '', imgAsString)
-    missing_padding = len(imgAsString) % 4
-    if missing_padding != 0:
-        imgAsString += b'='* (4 - missing_padding)
+    #missing_padding = len(imgAsString) % 4
+    #if missing_padding != 0:
+    #    imgAsString += '=' * (4 - missing_padding)
 
     imgdata = BytesIO(base64.b64decode(imgAsString))
     img = Image.open(imgdata)
