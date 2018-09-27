@@ -3,14 +3,20 @@ from io import BytesIO
 import base64
 import re
 
+EPD_WIDTH = 640
+EPD_HEIGHT = 384
+
 def main():
+    epd = epd7in5.EPD()
+    epd.init()
+    
     fileObj = open("base64bwExample.txt", mode="r", encoding="utf-8")
     imgAsString = fileObj.read()
     imgAsString = re.sub('^data:image/.+;base64,', '', imgAsString)
     imgdata = BytesIO(base64.b64decode(imgAsString))
     img = Image.open(imgdata)
     img.save("imageForEPaper.bmp", "BMP")
-    # now send to epaper
+    epd.display_frame(epd.get_frame_buffer(img))
 
 if __name__ == '__main__':
     main()
