@@ -16,7 +16,7 @@ def main():
     imgAsString = re.sub('^data:image/.+;base64,', '', imgAsString)
     missing_padding = len(imgAsString) % 4
     if missing_padding != 0:
-        imgAsString b'='* (4 - missing_padding)
+        imgAsString += b'='* (4 - missing_padding)
 
     imgdata = BytesIO(base64.b64decode(imgAsString))
     img = Image.open(imgdata)
