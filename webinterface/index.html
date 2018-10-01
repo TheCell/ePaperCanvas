@@ -9,6 +9,7 @@
 	<script type="text/javascript" src="fabric.min.js"></script>
 	<script type="text/javascript" src="floydSteinbergDithering.js"></script>
 	<script type="text/javascript" src="hexBinConvert.js"></script>
+	<script type="text/javascript" src="BlobGenerator.js"></script>
 </head>
 <body>
 	<div class="optionsWrapper">
@@ -314,8 +315,21 @@
 
 		let img = updateAndGetGrayscaleData(imageData);
 		ePaperCTX.putImageData(img, 0, 0);
-
+		blobGenTest();
 		//ePaperCanvas.drawImage(inputCanvas, 0, 0);
+	}
+
+	function blobGenTest()
+	{
+		let ePaperCanvas = document.getElementById("ePaperCanvas");
+		let ePaperCanvasCTX = ePaperCanvas.getContext("2d");
+		let grayscaleObject = getGrayscaleData();
+
+		window.blobGen = new BlobGenerator(
+			ePaperCanvas.width,
+			ePaperCanvas.height);
+		window.blobGen.imgObjectToBit(window.grayscaleImage);
+		window.blobGen.displayImgString();
 	}
 
 	function updateAndGetGrayscaleData(imageData)
