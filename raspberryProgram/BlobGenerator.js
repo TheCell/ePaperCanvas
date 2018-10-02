@@ -1,3 +1,6 @@
+let PNG = require('pngjs').PNG;
+let fs = require('fs');
+
 // 8 bytes compress to 8 bit.
 // We only need black or white so 1 bit can represent this.
 // the first pixel is the lowest bit in an Uint8.
@@ -46,17 +49,13 @@ class BlobGenerator
 		}
 	}
 
-	bitToImgObject()
+	bitToUint8Array()
 	{
-		console.warn("THIS IS DEVELOPMENT HERE / VERSION IN FOLDER RaspberryProgram is UP TO DATE");
+		//let imgObject = new Image(this.width, this.height);
+		let fullImgArray = new Uint8Array(this.width * this.height * 4);
 		let classRef = this;
-		let imgCanvas = document.createElement("canvas");
-		imgCanvas.width = this.width;
-		imgCanvas.height = this.height;
-		let imgObjectCTX = imgCanvas.getContext("2d");
-		let imageData = imgObjectCTX.getImageData(0, 0, this.width, this.height);
-		let pureData = imageData.data;
 
+		//imageData.data = new Uint8Array(this.width * this.height * 8);
 		this.imgAsByteArray.forEach(function decodeBits(value, index)
 		{
 			// 1 integer gets split up into 8 bits,
@@ -71,23 +70,28 @@ class BlobGenerator
 			{
 				let bitOffset = bitPosition * 4;
 				let byte = classRef.intFromBit(classRef.bitTest(value, bitPosition));
-				pureData[arrayOffset + bitOffset] = byte;
-				pureData[arrayOffset + bitOffset + 1] = byte;
-				pureData[arrayOffset + bitOffset + 2] = byte;
-				pureData[arrayOffset + bitOffset + 3] = 255;
+
+				fullImgArray[arrayOffset + bitOffset] = byte;
+				fullImgArray[arrayOffset + bitOffset + 1] = byte;
+				fullImgArray[arrayOffset + bitOffset + 2] = byte;
+				fullImgArray[arrayOffset + bitOffset + 3] = 255;
 			}
 		});
 
-		imgObjectCTX.putImageData(imageData, 0, 0);
-		return imgCanvas;
+		return fullImgArray;
 	}
 
-	displayImg()
+	saveImage(imgname)
 	{
-		let obj = window.blobGen.toObject();
-		let blober = new BlobGenerator(0,0,obj);
-		let canvas = blober.bitToImgObject();
-		document.body.appendChild(canvas);
+		let png = new PNG(
+		{
+			width: 640,
+			height: 384,
+			filterType: -1
+		});
+
+		png.data = this.bitToUint8Array();
+		png.pack().pipe(fs.createWriteStream(imgname));
 	}
 
 	bitFromInt(byte)
@@ -158,4 +162,6 @@ class BlobGenerator
 		return bit_test(num, bit) ? bit_clear(num, bit) : bit_set(num, bit);
 	}
 	*/
-}
+};
+
+module.exports = BlobGenerator;

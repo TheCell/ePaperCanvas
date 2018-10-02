@@ -30,8 +30,13 @@
 			<a class="button" id="sendButton" onclick="sendImage()">send</a>
 			<label>Arduino Format</label>
 			-->
-
+			<!--
 			<a class="button submitButton" id="send64Button" onclick="sendImageAsBase64()">
+				<i class="fas fa-paper-plane"></i> send to ePaper
+			</a>
+			-->
+
+			<a class="button submitButton" id="sendBlobGenButton" onclick="sendImageAsBlobGen()">
 				<i class="fas fa-paper-plane"></i> send to ePaper
 			</a>
 
@@ -190,7 +195,6 @@
 			"POST",
 			"https://dev.thecell.eu/ePaperDisplay/serverSide.php",
 			true);
-		//xhr.setRequestHeader('Content-Type', 'text/plain');
 		xhr.onreadystatechange = function()
 		{
 			if (this.readyState == XMLHttpRequest.DONE)
@@ -211,15 +215,56 @@
 		formData.append("imageData", encoderCanvas.toDataURL());
 		xhr.send(formData);
 
-		/*
-		let link = document.getElementById("send64Button");
-		link.href = encoderCanvas.toDataURL();
-		console.log(link.href);
-		link.download = "base64bw.txt";
-		*/
-		//window.location.href=ePaperCanvas.toDataURL();
-
 		let sendButton = document.getElementById("send64Button");
+		sendButton.style.backgroundColor = "#4CAF50";
+		sendButton.style.color = "#C5D0DE";
+		sendButton.style.cursor = "default";
+		sendButton.onclick = "";
+	}
+
+	function sendImageAsBlobGen()
+	{
+		window.resolutionFactor = 1;
+		window.fabricCanvas.discardActiveObject().renderAll();
+		displayResult();
+		let ePaperCanvas = document.getElementById("ePaperCanvas");
+		let ePaperCanvasCTX = ePaperCanvas.getContext("2d");
+		let grayscaleObject = getGrayscaleData();
+		let encoderCanvas = document.createElement("canvas");
+
+		encoderCanvas.width = grayscaleObject.width;
+		encoderCanvas.height = grayscaleObject.height;
+		let encoderCanvasCTX = encoderCanvas.getContext("2d");
+		encoderCanvasCTX.putImageData(grayscaleObject, 0, 0);
+
+		let xhr = new XMLHttpRequest();
+		xhr.open(
+			"POST",
+			"https://dev.thecell.eu/ePaperDisplay/serverSide.php",
+			true);
+		xhr.onreadystatechange = function()
+		{
+			if (this.readyState == XMLHttpRequest.DONE)
+			{
+				if (this.status == 200)
+				{
+					console.log(this.responseText);
+				}
+				else
+				{
+					console.log("error");
+					console.log(this);
+				}
+			}
+		};
+
+		let formData = new FormData();
+		let blobGen = new BlobGenerator(grayscaleObject.width, grayscaleObject.height);
+		blobGen.imgObjectToBit(grayscaleObject);
+		formData.append("imageData", JSON.stringify(blobGen.toObject()));
+		xhr.send(formData);
+
+		let sendButton = document.getElementById("sendBlobGenButton");
 		sendButton.style.backgroundColor = "#4CAF50";
 		sendButton.style.color = "#C5D0DE";
 		sendButton.style.cursor = "default";
@@ -329,7 +374,7 @@
 			ePaperCanvas.width,
 			ePaperCanvas.height);
 		window.blobGen.imgObjectToBit(window.grayscaleImage);
-		window.blobGen.displayImgString();
+		//window.blobGen.displayImg();
 	}
 
 	function updateAndGetGrayscaleData(imageData)
