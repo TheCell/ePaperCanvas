@@ -20,7 +20,7 @@ You can run the arduino test to see if the ePaper display works correctly and sw
 6. change the directory to the raspberryProgram directory
 7. npm i python-shell
 8. npm i xhr2
-9. npm i png-js
+9. npm i pngjs
 
 then run node main.js
 
