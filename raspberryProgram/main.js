@@ -1,4 +1,3 @@
-
 let {PythonShell} = require('python-shell');
 let XMLHttpRequest = require('xhr2');
 let fs = require('fs');
