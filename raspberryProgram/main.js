@@ -36,8 +36,20 @@ function getnewestEntryDate()
 	xhr.onload = function ()
 	{
 		console.log("entries loaded, processing");
-		let response = JSON.parse(this.responseText);
-		let responseDate = new Date(response.uploadTime);
+		let response;
+		let responseDate;
+
+		try
+		{
+			response = JSON.parse(this.responseText);
+			responseDate = new Date(response.uploadTime);
+		}
+		catch (e)
+		{
+			console.error(e);
+			dataFetchingInProgress = false;
+			return;
+		}
 
 		if (responseDate.getTime() != dateOfEpaperImage.getTime())
 		{
