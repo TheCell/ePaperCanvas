@@ -7,10 +7,7 @@ let xhr = new XMLHttpRequest();
 let timeSinceLastPaperUpdate = new Date();
 let dateOfEpaperImage = new Date();
 let dataFetchingInProgress = false;
-let interval = setInterval(checkForEntry, 1000);
-
-
-
+let interval = setInterval(checkForEntry, 1000); // start the fun
 
 function saveBlobGenObjAsPNG(blobGenObj)
 {
