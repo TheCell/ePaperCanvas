@@ -17,6 +17,7 @@ def main():
 
     img.save("imageForEPaper.bmp", "BMP")
     epd.display_frame(epd.get_frame_buffer(img))
+    epd.sleep();
 
 if __name__ == '__main__':
     main()
