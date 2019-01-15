@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 let {PythonShell} = require('python-shell');
 let XMLHttpRequest = require('xhr2');
 let fs = require('fs');
