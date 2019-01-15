@@ -28,3 +28,6 @@ then run node main.js
 1. setup a database where you can save base64 string (yes there are better ways (see binary if interested) but I don't care for this project :))
 2. upload the folder webinterface and edit the dbauth.php
 everything should work now
+
+# restart service on raspi restart
+[Hackernoon on how to autostart a node.js server](https://hackernoon.com/making-node-js-service-always-alive-on-ubuntu-server-e20c9c0808e4)
